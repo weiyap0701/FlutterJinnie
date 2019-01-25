@@ -46,6 +46,7 @@ class _WishScreenState extends State<WishScreen> {
         Helper.showErrorDialog(context);
       }
     });
+
   }
 
   Widget _loadingIndicator() {
@@ -71,7 +72,7 @@ class _WishScreenState extends State<WishScreen> {
               }
             }
             final wishModel = this.wishArray[i];
-            return PostCell(wishModel: wishModel);
+            return PostCell(wishModel: wishModel, context: context,);
         },
     ));
   }

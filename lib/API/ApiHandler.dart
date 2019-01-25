@@ -8,6 +8,7 @@ import 'package:jinnie/Utils/Constants.dart';
 //Model
 import 'package:jinnie/Model/UserModel.dart';
 import 'package:jinnie/Model/WishModel.dart';
+import 'package:jinnie/Model/WishComment.dart';
 
 class LoginRegApiHandler {
 
@@ -84,4 +85,31 @@ class WishApiHandler {
     }
 
   }
+
+  static Future<List<WishComment>> getWishComment(String wishId) async {
+    
+    final url = Constants.serverUrl + "request/" + wishId;
+    final response = await http.get(url, headers: {
+      "access-token": Constants.tempAccessToken,
+      "user-id": Constants.tempUserId
+    });
+
+    if (response.statusCode == 200) {
+      List<WishComment> commentArray = [];
+      final map = json.decode(response.body);
+      final result = map["return"];
+      final request = result["request"];
+      final comments = request["comments"];
+      comments.forEach((comment){
+        commentArray.add(WishComment(comment));
+      });
+
+      return commentArray;
+    }
+    else {
+      return null;
+    }
+
+  }
+
 }

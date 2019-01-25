@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
 
 //non-library
+import 'package:jinnie/API/ApiHandler.dart';
+
 import 'package:jinnie/Model/WishModel.dart';
+import 'package:jinnie/Model/WishComment.dart';
 
 class PostCell extends StatelessWidget {
 
   final WishModel wishModel;
+  final BuildContext context;
+  List<WishComment> wishCommentArray;
 
-  PostCell({this.wishModel});
+  PostCell({this.wishModel, this.context});
+
+  _performGetWishComment(String wishId) {
+    WishApiHandler.getWishComment(wishId).then((comments){
+      this.wishCommentArray = comments;
+      _buildCommentList();
+    });
+  }
 
   CircleAvatar _buildProfileImage() {
     if (this.wishModel.user.userProfileImageName != null) {
@@ -20,6 +32,60 @@ class PostCell extends StatelessWidget {
         backgroundImage: NetworkImage("https://cdn.pixabay.com/photo/2017/07/18/23/23/user-2517433_960_720.png")
       );
     }
+  }
+
+  Future _buildCommentList() async {
+    await showDialog(
+      context: this.context,
+      child: Dialog(
+        child: new Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            ListTile(
+              title: new Text("Commented By", style: TextStyle(fontWeight: FontWeight.w400, fontSize: 18)),
+            ),
+            Divider(),
+            new ListView.builder(
+              shrinkWrap: true,
+              itemCount: this.wishCommentArray != null ? this.wishCommentArray.length : 0,
+              itemBuilder: (buildContext, i){
+                var comment = this.wishCommentArray[i];
+                return _buildComments(comment);
+              },
+            ),
+          ],
+        ),
+      )
+    );
+  }
+
+  Column _buildComments(WishComment comment) {
+    var profileImageUrl = comment.user.userProfileImageName != null ? comment.user.userProfileImageName : "https://cdn.pixabay.com/photo/2017/07/18/23/23/user-2517433_960_720.png";
+    return new Column(
+      children: <Widget>[
+        new ListTile(
+          leading: CircleAvatar(
+            backgroundImage: NetworkImage(profileImageUrl)
+          ),
+          title: Row(
+            children: <Widget>[
+              new Text(
+                comment.user.firstName + " " + comment.user.lastName, 
+                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blueGrey
+              )),
+              Padding(padding: const EdgeInsets.only(left: 2, right: 2)),
+              new Text(
+                "@" + comment.user.alias, 
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: Colors.grey
+              ))
+          ]),
+        subtitle: new Text("12w"),
+      ),
+      new ListTile(
+        title: new Text(comment.message),
+      ),
+      Divider()
+    ]);
   }
 
   Row _buildName() {
@@ -59,7 +125,9 @@ class PostCell extends StatelessWidget {
       MaterialButton(
         minWidth: 60.0,
         padding: const EdgeInsets.all(2.0),
-        onPressed: () {},
+        onPressed: () {
+          _performGetWishComment(this.wishModel.wishId);
+        },
         child: Text(this.wishModel.totalComment.toString() + text,
           style: TextStyle(
           fontSize: 12.0,
